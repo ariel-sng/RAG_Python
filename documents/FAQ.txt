@@ -1,0 +1,5 @@
+OpenAI es una empresa de inteligencia artificial.
+
+Los embeddings permiten representar texto como vectores numéricos.
+
+Los sistemas RAG utilizan embeddings para recuperar contexto relevante antes de consultar un LLM.
