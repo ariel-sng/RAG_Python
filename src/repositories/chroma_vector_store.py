@@ -17,6 +17,7 @@ class ChromaVectorStore(VectorStore):
         self,
         persist_directory: str = "storage/chroma",
         collection_name: str = "documents",
+        reload: bool = False,
     ):
         self.client = chromadb.PersistentClient(
             path=persist_directory
@@ -25,6 +26,10 @@ class ChromaVectorStore(VectorStore):
         self.collection = self.client.get_or_create_collection(
             name=collection_name
         )
+
+        if reload:
+            print("Limpiando colección...")
+            self.__reset()
 
     def save(
         self,
@@ -57,7 +62,7 @@ class ChromaVectorStore(VectorStore):
             metadatas=metadatas,
         )
 
-    def reset(self) -> None:
+    def __reset(self) -> None:
         self.client.delete_collection(
             self.collection.name
         )

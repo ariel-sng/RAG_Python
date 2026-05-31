@@ -11,18 +11,18 @@ from src.services.text_chunker import TextChunker
 
 
 def main() -> None:
+    
+    ### MANEJO DE ARGUMENTOS ###
+    
     args = sys.argv[1:]
+    reload = "--reload" in args
 
-    reload = False
-
-    if "--reload" in args:
-        reload = True
+    if reload:
         args.remove("--reload")
 
+    # si no queda solamente un argumento, es un error ya que debería ser máximo 2
     if len(args) != 1:
-        print(
-            "Uso: uv run python -m src.scripts.run_ingestion [--reload] <archivo>"
-        )
+        print("Uso incorrecto: uv run python -m src.scripts.run_ingestion [--reload] <archivo>")
         sys.exit(1)
 
     file_path = args[0]
@@ -31,24 +31,25 @@ def main() -> None:
         print(f"Archivo no encontrado: {file_path}")
         sys.exit(1)
 
-    client = OpenAI(
-        api_key=Settings.OPENAI_API_KEY,
-    )
+
+    ### CREACIÓN DE COMPONENTES PARA LA BASE DE DATOS ###
 
     vector_store = ChromaVectorStore(
         persist_directory="storage/chroma",
         collection_name="documents",
+        reload=reload,
     )
 
-    if reload:
-        print("Limpiando colección...")
-        vector_store.reset()
+
+    client = OpenAI(
+        api_key=Settings.OPENAI_API_KEY,
+    )
 
     ingestion_service = DocumentIngestionService(
         loader=DocumentLoader(),
         chunker=TextChunker(
-            chunk_size=500,
-            chunk_overlap=100,
+            chunk_size=10, # Por ahora, pongo un chunk size muy pequeño para probar, sé perfectamente que es ridículo
+            chunk_overlap=2,
         ),
         embedding_generator=OpenAIEmbeddingGenerator(
             client=client,
@@ -56,10 +57,12 @@ def main() -> None:
         vector_store=vector_store,
     )
 
+    print(f"Iniciando ingestión del archivo: {file_path}")
     ingestion_service.ingest(
         file_path=file_path,
         metadata={
-            "file_name": Path(file_path).name,
+            "file_name": Path(file_path).name, 
+            # Por ahora, solo agrego como metada el nombre del archivo, pero se pueden agregar más metadatos a futuro
         },
     )
 
