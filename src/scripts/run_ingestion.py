@@ -4,10 +4,10 @@ from openai import OpenAI
 
 from src.config.settings import Settings
 from src.repositories.chroma_vector_store import ChromaVectorStore
-from src.services.ingestion_service import RagIngestionService
-from src.services.document_loader import DocumentLoader
-from src.services.embedding_generator import OpenAIEmbeddingGenerator
-from src.services.text_chunker import TextChunker
+from src.RAG.ingestion_service import RagIngestionService
+from src.RAG.document_loader import DocumentLoader
+from src.RAG.embedding_generator import OpenAIEmbeddingGenerator
+from src.RAG.text_chunker import TextChunker
 
 
 def main() -> None:
@@ -53,7 +53,7 @@ def main() -> None:
     )
 
     ### LA INGESTA  ###
-    
+
     print(f"Iniciando ingestión del archivo: {file_path}")
     try:
         ingestion_service.ingest(

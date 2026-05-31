@@ -1,9 +1,9 @@
 from chromadb.api.types import Metadata
 
 from src.repositories.vector_store import VectorStore
-from src.services.document_loader import DocumentLoader
-from src.services.embedding_generator import EmbeddingGenerator
-from src.services.text_chunker import TextChunker
+from src.RAG.document_loader import DocumentLoader
+from src.RAG.embedding_generator import EmbeddingGenerator
+from src.RAG.text_chunker import TextChunker
 
 
 class RagIngestionService:
