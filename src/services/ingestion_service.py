@@ -6,7 +6,7 @@ from src.services.embedding_generator import EmbeddingGenerator
 from src.services.text_chunker import TextChunker
 
 
-class DocumentIngestionService:
+class RagIngestionService:
 
     def __init__(
         self,

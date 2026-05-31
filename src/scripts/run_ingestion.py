@@ -4,7 +4,7 @@ from openai import OpenAI
 
 from src.config.settings import Settings
 from src.repositories.chroma_vector_store import ChromaVectorStore
-from src.services.document_ingestion_service import DocumentIngestionService
+from src.services.ingestion_service import RagIngestionService
 from src.services.document_loader import DocumentLoader
 from src.services.embedding_generator import OpenAIEmbeddingGenerator
 from src.services.text_chunker import TextChunker
@@ -27,12 +27,7 @@ def main() -> None:
 
     file_path = args[0]
 
-    if not Path(file_path).exists():
-        print(f"Archivo no encontrado: {file_path}")
-        sys.exit(1)
-
-
-    ### CREACIÓN DE COMPONENTES PARA LA BASE DE DATOS ###
+    ### CREACIÓN DE COMPONENTES  ###
 
     vector_store = ChromaVectorStore(
         persist_directory="storage/chroma",
@@ -45,7 +40,7 @@ def main() -> None:
         api_key=Settings.OPENAI_API_KEY,
     )
 
-    ingestion_service = DocumentIngestionService(
+    ingestion_service = RagIngestionService(
         loader=DocumentLoader(),
         chunker=TextChunker(
             chunk_size=10, # Por ahora, pongo un chunk size muy pequeño para probar, sé perfectamente que es ridículo
@@ -57,18 +52,23 @@ def main() -> None:
         vector_store=vector_store,
     )
 
+    ### LA INGESTA  ###
+    
     print(f"Iniciando ingestión del archivo: {file_path}")
-    ingestion_service.ingest(
-        file_path=file_path,
-        metadata={
-            "file_name": Path(file_path).name, 
-            # Por ahora, solo agrego como metada el nombre del archivo, pero se pueden agregar más metadatos a futuro
-        },
-    )
+    try:
+        ingestion_service.ingest(
+            file_path=file_path,
+            metadata={
+                "file_name": Path(file_path).name, 
+                # Por ahora, solo agrego como metada el nombre del archivo, pero se pueden agregar más metadatos a futuro
+            },
+        )
+    except Exception as ex:
+        print(f"ERROR inesperado: {ex}")
+        sys.exit(1)
 
-    print(
-        f"Ingestión completada correctamente: {file_path}"
-    )
+
+    print(f"Ingestión completada correctamente: {file_path}")
 
 
 if __name__ == "__main__":
