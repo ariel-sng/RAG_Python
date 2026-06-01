@@ -7,7 +7,7 @@ from typing import List
 class TextChunker:
     def __init__(
         self,
-        strategy: str = "fixed",
+        strategy: str = "sentence",    # Sé perfectamente que pude haber hecho un strategy o algo por el estilo, pero con esto basta y estoy quemado
         chunk_size: int = 500,
         chunk_overlap: int = 100,
     ):

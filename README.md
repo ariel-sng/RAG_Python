@@ -1,4 +1,5 @@
-# Sistema de procesamiento de documentos y consultas con generación aumentada por recuperación. Utiliza ChromaDB como vector store y OpenAI como LLM.
+# RAG
+Sistema de procesamiento de documentos y consultas con generación aumentada por recuperación. Utiliza ChromaDB como vector store y OpenAI como LLM.
 
 ---
 
