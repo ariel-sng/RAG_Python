@@ -1,4 +1,4 @@
-import json
+﻿import json
 from pathlib import Path
 
 import tiktoken
@@ -68,13 +68,35 @@ class RagQueryService:
         question: str,
         context_chunks: list[RAGSearchResult],
     ) -> str:
+        
         encoder = self._get_token_encoder()
         max_tokens = Settings.MAX_PROMPT_TOKENS
-
+        
         chunks = context_chunks.copy()
         prompt = self.prompt_builder.build(question=question, context_chunks=chunks)
         token_count = self._count_tokens(prompt, encoder)
+        
+        '''
+        Lógica del acotador de prompt: 
 
+        Prompt (pregunta + contexto completo adquirido por RAG)
+        ↓
+        ¿Excede "max_tokens"?
+            ├─ NO → Devuelve el prompt [✓]
+            └─ SÍ → Elimina chunks de contexto
+                ↓
+                ¿Excede "max_tokens"?
+                    ├─ NO → Devuelve prompt sin algunos chunks [✓]
+                    └─ SÍ → Elimina TODO el contexto
+                        ↓
+                        ¿Excede "max_tokens"?
+                            ├─ NO → Devuelve pregunta sin contexto [✓]
+                            └─ SÍ → Acorta la pregunta misma
+                                ↓
+                                ¿Hay espacio?
+                                    ├─ SÍ → Devuelve pregunta acortada [✓]
+                                    └─ NO → Error (límite muy pequeño) [X]
+        '''
         while token_count > max_tokens and chunks:
             chunks.pop()
             prompt = self.prompt_builder.build(question=question, context_chunks=chunks)
@@ -123,8 +145,6 @@ class RagQueryService:
         tokens = encoder.encode(text)
         return encoder.decode(tokens[:max_tokens])
     
-
-    
     def save_rag_result(
         self,
         result: SearchResult,
@@ -134,7 +154,7 @@ class RagQueryService:
 
         Path(output_file).parent.mkdir(parents=True, exist_ok=True)
 
-        data = {
+        new_result = {
             "question": result.question,
             "system_answer": result.answer,
             "chunks": [
@@ -147,7 +167,21 @@ class RagQueryService:
             ],
         }
 
+        results = []
+        if Path(output_file).exists():
+            try:
+                with open(output_file, "r", encoding="utf-8") as f:
+                    existing_data = json.load(f)
+                    if isinstance(existing_data, list):
+                        results = existing_data
+                    else:
+                        results = [existing_data]
+            except (json.JSONDecodeError, IOError):
+                results = []
+
+        results.append(new_result)
+
         with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+            json.dump(results, f, ensure_ascii=False, indent=2)
             
         print("Archivo guardado con éxito.")
