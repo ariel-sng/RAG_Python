@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import tiktoken
+
 from src.config.settings import Settings
 from src.models.search_result import SearchResult
 from src.models.rag_search_result import RAGSearchResult
@@ -47,7 +49,7 @@ class RagQueryService:
             k=k,
         )
 
-        prompt = self.prompt_builder.build(
+        prompt = self._build_prompt_with_limit(
             question=question,
             context_chunks=results,
         )
@@ -61,6 +63,66 @@ class RagQueryService:
             answer=system_answer,
             chunks=results,
         )
+
+    def _build_prompt_with_limit(
+        self,
+        question: str,
+        context_chunks: list[RAGSearchResult],
+    ) -> str:
+        encoder = self._get_token_encoder()
+        max_tokens = Settings.MAX_PROMPT_TOKENS
+
+        chunks = context_chunks.copy()
+        prompt = self.prompt_builder.build(question=question, context_chunks=chunks)
+        token_count = self._count_tokens(prompt, encoder)
+
+        while token_count > max_tokens and chunks:
+            chunks.pop()
+            prompt = self.prompt_builder.build(question=question, context_chunks=chunks)
+            token_count = self._count_tokens(prompt, encoder)
+
+        if token_count > max_tokens:
+            prompt_without_context = self.prompt_builder.build(question=question, context_chunks=[])
+            token_count = self._count_tokens(prompt_without_context, encoder)
+
+            if token_count > max_tokens:
+                overhead = self._count_tokens(
+                    self.prompt_builder.build(question="", context_chunks=[]),
+                    encoder,
+                )
+                remaining_tokens = max_tokens - overhead
+                if remaining_tokens <= 0:
+                    raise ValueError(
+                        "MAX_PROMPT_TOKENS is too small to build a valid prompt."
+                    )
+
+                question = self._truncate_text_to_token_limit(
+                    question,
+                    remaining_tokens,
+                    encoder,
+                )
+
+            prompt = self.prompt_builder.build(question=question, context_chunks=[])
+
+        return prompt
+
+    def _get_token_encoder(self):
+        try:
+            return tiktoken.encoding_for_model(self.llm_generator.model)
+        except Exception:
+            return tiktoken.get_encoding("cl100k_base")
+
+    def _count_tokens(self, text: str, encoder) -> int:
+        return len(encoder.encode(text))
+
+    def _truncate_text_to_token_limit(
+        self,
+        text: str,
+        max_tokens: int,
+        encoder,
+    ) -> str:
+        tokens = encoder.encode(text)
+        return encoder.decode(tokens[:max_tokens])
     
 
     
