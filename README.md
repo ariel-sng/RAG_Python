@@ -1,6 +1,10 @@
 # RAG
 Sistema de procesamiento de documentos y consultas con generación aumentada por recuperación. Utiliza ChromaDB como vector store y OpenAI como LLM.
 
+## Descripción del proyecto
+
+Este proyecto implementa un sistema RAG (Retrieval-Augmented Generation) en Python con una arquitectura orientada a objetos. Permite ingerir documentos, dividirlos en fragmentos mediante estrategias configurables (chunks de tamaño fijo o segmentación por oraciones), generar embeddings utilizando modelos de OpenAI y almacenarlos en ChromaDB. La búsqueda semántica se realiza mediante índices ANN (Approximate Nearest Neighbors) provistos por ChromaDB, permitiendo recuperar eficientemente los fragmentos más relevantes para una consulta, y luego puede integrarse posteriormente con un LLM para generar respuestas basadas en el contexto recuperado. El sistema conserva metadatos asociados a cada fragmento, como el nombre del archivo de origen. Actualmente puede ejecutarse completamente mediante comandos CLI para realizar ingesta, consulta y administración de la base vectorial.
+
 ---
 
 ## Requisitos Previos
