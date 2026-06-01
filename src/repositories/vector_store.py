@@ -6,7 +6,7 @@ from chromadb.api.types import (
     Metadata,
 )
 
-from src.models.search_result import SearchResult
+from src.models.search_result import RAGSearchResult
 
 class VectorStore(ABC):
     '''
@@ -28,5 +28,5 @@ class VectorStore(ABC):
         self,
         embedding: Embedding,
         k: int,
-    ) -> list[SearchResult]:
+    ) -> list[RAGSearchResult]:
         pass

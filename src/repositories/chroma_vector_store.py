@@ -10,7 +10,7 @@ from chromadb.api.types import (
 )
 
 from src.repositories.vector_store import VectorStore
-from src.models.search_result import SearchResult
+from src.models.rag_search_result import RAGSearchResult
 
 class ChromaVectorStore(VectorStore):
 
@@ -81,7 +81,7 @@ class ChromaVectorStore(VectorStore):
         self,
         embedding: Embedding,
         k: int,
-    ) -> list[SearchResult]:
+    ) -> list[RAGSearchResult]:
         
         results = self.collection.query(
             query_embeddings=[embedding],
@@ -109,7 +109,7 @@ class ChromaVectorStore(VectorStore):
         metadatas_list = metadatas[0]
 
         return [
-            SearchResult(
+            RAGSearchResult(
                 document=document,
                 distance=distance,
                 metadata=metadata,

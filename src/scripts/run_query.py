@@ -6,8 +6,11 @@ from openai import OpenAI
 
 from src.config.settings import Settings
 from src.repositories.chroma_vector_store import ChromaVectorStore
+
 from src.RAG.embedding_generator import OpenAIEmbeddingGenerator
 from src.RAG.query_services import RagQueryService
+from src.RAG.llm_generator import LLMGenerator
+from src.RAG.prompt_builder import PromptBuilder
 
 
 def main() -> None:
@@ -44,17 +47,37 @@ def main() -> None:
             collection_name="documents"
             )
     
+    prompt_builder = PromptBuilder()
+    llm_generator = LLMGenerator(client=client, model="gpt-3.5-turbo")
+    
     query_service = RagQueryService(
         embedding_generator=openai_embedding_generator,
-        vector_store=vector
+        vector_store=vector,
+        prompt_builder=prompt_builder,
+        llm_generator=llm_generator
     )
 
     ### CONSULTA AL RAG  ###
 
+    result = query_service.answer(
+        question=args.question,
+        k=args.k,
+    )
+
+    print(f"Respuesta: {result.answer}")
+
+    query_service.save_rag_result(
+        result=result,
+        output_file="rag_result.json",
+    )
+
+
+    """
     results = query_service.search(
         question=args.question,
         k=args.k,
     )
+
 
     for i, result in enumerate(results, start=1):
         print(f"[{i}]")
@@ -68,6 +91,7 @@ def main() -> None:
         print()
         print(result.document)
         print("\n" + "-" * 80 + "\n")
+    """
 
 
 if __name__ == "__main__":
