@@ -11,7 +11,7 @@ class TextChunker:
         chunk_size: int = 500,
         chunk_overlap: int = 100,
     ):
-        valid_strategies = {"fixed", "sentence", "semantic"}
+        valid_strategies = {"fixed", "sentence"}
         if strategy not in valid_strategies:
             raise ValueError(
                 f"Unsupported chunking strategy: {strategy}. "
