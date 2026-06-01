@@ -43,7 +43,6 @@ class RagQueryService:
         question: str,
         k: int = 5,
     ) -> SearchResult:
-
         results = self.search(
             question=question,
             k=k,

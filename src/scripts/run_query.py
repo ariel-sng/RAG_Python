@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from openai import OpenAI
 
@@ -60,17 +61,21 @@ def main() -> None:
 
     ### CONSULTA AL RAG  ###
 
-    result = query_service.answer(
-        question=args.question,
-        k=args.k,
-    )
+    try:
+        result = query_service.answer(
+            question=args.question,
+            k=args.k,
+        )
 
-    print(f"Respuesta: {result.answer}")
+        print(f"Respuesta: {result.answer}")
 
-    query_service.save_rag_result(
-        result=result,
-        output_file=Settings.RAG_RESULT_FILE,
-    )
+        query_service.save_rag_result(
+            result=result,
+            output_file=Settings.RAG_RESULT_FILE,
+        )
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
 
 
     """
