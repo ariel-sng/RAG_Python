@@ -217,13 +217,17 @@ uv run python -m src.scripts.read_chroma
 │   │
 │   ├── utils/
 │   │   ├── text_chunker.py            # Divisor de texto (fixed/sentence)
-│   │   ├── document_loader.py         # Cargador de archivos
-│   │   └── __init__.py                # Marcador de paquete
+│   │   └── document_loader.py         # Cargador de archivos
 │   │
 │   └── scripts/
 │       ├── run_ingestion.py           # CLI para indexación
 │       ├── run_query.py               # CLI para consultas
 │       └── read_chroma.py             # CLI para inspeccionar chunks
+│
+├──tests/
+│   └── utils/
+│       ├── test_document_loader.py     (7 tests)
+│       └── test_text_chunker.py        (17 tests)
 │
 ├── storage/
 │   └── chroma/                        # Base de datos ChromaDB (persistente)
@@ -288,5 +292,20 @@ uv run python -m src.scripts.read_chroma
 - **Acumulación de resultados**: Cada consulta agrega un nuevo resultado al JSON sin sobrescribir
 - **ChromaDB persistente**: Los embeddings se guardan en `storage/chroma/` y persisten entre sesiones
 - **Estrategia recomendada**: Usa `sentence` para documentos con estructura clara; `fixed` para contenido más uniforme
+
+## Tests básicos
+
+### Opción 1: Todos los tests
+```bash
+pytest
+```
+
+### Opción 2: Tests específicos de módulo
+```bash
+# Document Loader
+pytest tests/utils/test_document_loader.py -v
+
+# Text Chunker
+pytest tests/utils/test_text_chunker.py -v
 
 
