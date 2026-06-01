@@ -20,7 +20,7 @@ def main() -> None:
     if reload:
         args.remove("--reload")
 
-    # si no queda solamente un argumento, es un error ya que debería ser máximo 2
+    # si no queda solamente un argumento, es un error ya que debería tener máximo 2
     if len(args) != 1:
         print("Uso incorrecto: uv run python -m src.scripts.run_ingestion [--reload] <archivo>")
         sys.exit(1)
@@ -31,11 +31,13 @@ def main() -> None:
 
     vector_store = ChromaVectorStore(
         persist_directory="storage/chroma",
-        collection_name="documents",
-        reload=reload,
+        collection_name="documents"
     )
 
-
+    if reload:
+        print("Limpiando colección...")
+        vector_store.reset()
+        
     client = OpenAI(
         api_key=Settings.OPENAI_API_KEY,
     )
@@ -43,8 +45,8 @@ def main() -> None:
     ingestion_service = RagIngestionService(
         loader=DocumentLoader(),
         chunker=TextChunker(
-            chunk_size=10, # Por ahora, pongo un chunk size muy pequeño para probar, sé perfectamente que es ridículo
-            chunk_overlap=2,
+            chunk_size=500,
+            chunk_overlap=100,
         ),
         embedding_generator=OpenAIEmbeddingGenerator(
             client=client,

@@ -34,7 +34,4 @@ class OpenAIEmbeddingGenerator(EmbeddingGenerator):
             input=texts,
         )
 
-        return cast(
-            Embeddings,
-            [item.embedding for item in response.data],
-        )
+        return cast(Embeddings, [item.embedding for item in response.data],)

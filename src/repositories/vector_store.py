@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 
 from chromadb.api.types import (
+    Embedding,
     Embeddings,
     Metadata,
 )
 
+from src.models.search_result import SearchResult
 
 class VectorStore(ABC):
     '''
@@ -19,4 +21,12 @@ class VectorStore(ABC):
         chunks: list[str],
         metadata: Metadata,
     ) -> None:
+        pass
+
+    @abstractmethod
+    def search(
+        self,
+        embedding: Embedding,
+        k: int,
+    ) -> list[SearchResult]:
         pass

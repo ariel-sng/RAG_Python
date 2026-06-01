@@ -3,33 +3,37 @@ from uuid import uuid4
 
 import chromadb
 from chromadb.api.types import (
+    Embedding, 
     Embeddings,
     Metadata,
     Metadatas,
 )
 
 from src.repositories.vector_store import VectorStore
-
+from src.models.search_result import SearchResult
 
 class ChromaVectorStore(VectorStore):
 
     def __init__(
         self,
         persist_directory: str = "storage/chroma",
-        collection_name: str = "documents",
-        reload: bool = False,
+        collection_name: str = "documents"
     ):
         self.client = chromadb.PersistentClient(
             path=persist_directory
         )
 
-        self.collection = self.client.get_or_create_collection(
-            name=collection_name
-        )
+        self.collection_name = collection_name
+        self.collection_metadata = {
+            "hnsw:space": "cosine"
+        }
 
-        if reload:
-            print("Limpiando colección...")
-            self.__reset()
+        self.collection = self.client.get_or_create_collection(
+            name=collection_name,
+            metadata={
+                "hnsw:space": "cosine"
+            }
+        )
 
     def save(
         self,
@@ -62,11 +66,57 @@ class ChromaVectorStore(VectorStore):
             metadatas=metadatas,
         )
 
-    def __reset(self) -> None:
+
+    def reset(self) -> None:
         self.client.delete_collection(
             self.collection.name
         )
 
         self.collection = self.client.get_or_create_collection(
-            name=self.collection.name
+            name     =   self.collection.name,
+            metadata =   self.collection_metadata,
         )
+    
+    def search(
+        self,
+        embedding: Embedding,
+        k: int,
+    ) -> list[SearchResult]:
+        
+        results = self.collection.query(
+            query_embeddings=[embedding],
+            n_results=k,
+            include=[
+                "documents",
+                "distances",
+                "metadatas",
+            ],
+        )
+
+        documents = results.get("documents")
+        distances = results.get("distances")
+        metadatas = results.get("metadatas")
+
+        if (
+            documents is None
+            or distances is None
+            or metadatas is None
+        ):
+            return []
+
+        documents_list = documents[0]
+        distances_list = distances[0]
+        metadatas_list = metadatas[0]
+
+        return [
+            SearchResult(
+                document=document,
+                distance=distance,
+                metadata=metadata,
+            )
+            for document, distance, metadata in zip(
+                documents_list,
+                distances_list,
+                metadatas_list,
+            )
+        ]
