@@ -59,8 +59,9 @@ def main() -> None:
     )
 
     if args.reload:
-        print("Limpiando colección...")
+        print("Reload solicitado: borrando la colección existente antes de la ingestión...")
         vector_store.reset()
+        print("Colección 'documents' reiniciada correctamente.")
         
     client = OpenAI(
         api_key=Settings.OPENAI_API_KEY,
@@ -82,7 +83,13 @@ def main() -> None:
 
     ### LA INGESTA  ###
 
-    print(f"Iniciando ingestión del archivo: {file_path}")
+    print("Preparando ingestión de documento...")
+    print(f"  Archivo       : {file_path}")
+    print(f"  Estrategia    : {args.chunk_strategy}")
+    print(f"  Chunk size    : {args.chunk_size}")
+    print(f"  Chunk overlap : {args.chunk_overlap}")
+    print("  Vector store  : storage/chroma, colección 'documents'")
+
     try:
         ingestion_service.ingest(
             file_path=file_path,
@@ -92,11 +99,10 @@ def main() -> None:
             },
         )
     except Exception as ex:
-        print(f"ERROR inesperado: {ex}")
+        print(f"ERROR inesperado durante la ingestión del archivo '{file_path}': {ex}")
         sys.exit(1)
 
-
-    print(f"Ingestión completada correctamente: {file_path}")
+    print(f"Ingestión completada correctamente para: {file_path}")
 
 
 if __name__ == "__main__":

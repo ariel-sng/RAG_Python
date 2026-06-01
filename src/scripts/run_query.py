@@ -61,20 +61,28 @@ def main() -> None:
 
     ### CONSULTA AL RAG  ###
 
+    print("Iniciando consulta al modelo RAG...")
+    print(f"  Pregunta    : {args.question}")
+    print(f"  Resultados K: {args.k}")
+    print("  Vector store: storage/chroma, colección 'documents'")
+
     try:
         result = query_service.answer(
             question=args.question,
             k=args.k,
         )
 
-        print(f"Respuesta: {result.answer}")
+        print("\n--- Respuesta generada ---")
+        print(result.answer)
+        print("--- Fin de la respuesta ---\n")
 
         query_service.save_rag_result(
             result=result,
             output_file=Settings.RAG_RESULT_FILE,
         )
+        print(f"Resultados guardados en: {Settings.RAG_RESULT_FILE}")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error al generar la respuesta para la pregunta '{args.question}': {e}")
         sys.exit(1)
 
 
