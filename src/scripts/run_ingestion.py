@@ -1,4 +1,5 @@
 from pathlib import Path
+import argparse
 import sys
 from openai import OpenAI
 
@@ -7,25 +8,48 @@ from src.repositories.chroma_vector_store import ChromaVectorStore
 from src.RAG.ingestion_service import RagIngestionService
 from src.RAG.document_loader import DocumentLoader
 from src.RAG.embedding_generator import OpenAIEmbeddingGenerator
-from src.RAG.text_chunker import TextChunker
+from src.utils.text_chunker import TextChunker
 
 
 def main() -> None:
     
     ### MANEJO DE ARGUMENTOS ###
     
-    args = sys.argv[1:]
-    reload = "--reload" in args
+    parser = argparse.ArgumentParser(
+        description="Ingesta documentos en Chroma usando chunks fijos o por oraciones."
+    )
+    parser.add_argument(
+        "file_path",
+        type=str,
+        help="Ruta del archivo a procesar.",
+    )
+    parser.add_argument(
+        "--reload",
+        action="store_true",
+        help="Borrar la colección antes de la ingestión.",
+    )
+    parser.add_argument(
+        "--chunk-strategy",
+        choices=["fixed", "sentence", "semantic"],
+        default="fixed",
+        help="Estrategia para dividir el texto en chunks.",
+    )
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=500,
+        help="Tamaño máximo aproximado de cada chunk en caracteres.",
+    )
+    parser.add_argument(
+        "--chunk-overlap",
+        type=int,
+        default=100,
+        help="Overlap entre chunks solo para estrategia fixed.",
+    )
 
-    if reload:
-        args.remove("--reload")
+    args = parser.parse_args()
 
-    # si no queda solamente un argumento, es un error ya que debería tener máximo 2
-    if len(args) != 1:
-        print("Uso incorrecto: uv run python -m src.scripts.run_ingestion [--reload] <archivo>")
-        sys.exit(1)
-
-    file_path = args[0]
+    file_path = args.file_path
 
     ### CREACIÓN DE COMPONENTES  ###
 
@@ -34,7 +58,7 @@ def main() -> None:
         collection_name="documents"
     )
 
-    if reload:
+    if args.reload:
         print("Limpiando colección...")
         vector_store.reset()
         
@@ -45,11 +69,13 @@ def main() -> None:
     ingestion_service = RagIngestionService(
         loader=DocumentLoader(),
         chunker=TextChunker(
-            chunk_size=500,
-            chunk_overlap=100,
+            strategy=args.chunk_strategy,
+            chunk_size=args.chunk_size,
+            chunk_overlap=args.chunk_overlap,
         ),
         embedding_generator=OpenAIEmbeddingGenerator(
             client=client,
+            model=Settings.EMBEDDING_MODEL,
         ),
         vector_store=vector_store,
     )

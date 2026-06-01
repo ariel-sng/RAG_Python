@@ -1,4 +1,4 @@
-from src.models.search_result import RAGSearchResult
+from models.rag_search_result import RAGSearchResult
 
 class PromptBuilder:
 

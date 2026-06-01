@@ -39,7 +39,8 @@ def main() -> None:
     )
 
     openai_embedding_generator = OpenAIEmbeddingGenerator(
-        client=client
+        client=client,
+        model=Settings.EMBEDDING_MODEL,
     )
 
     vector = ChromaVectorStore(
@@ -68,7 +69,7 @@ def main() -> None:
 
     query_service.save_rag_result(
         result=result,
-        output_file="rag_result.json",
+        output_file=Settings.RAG_RESULT_FILE,
     )
 
 

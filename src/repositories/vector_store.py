@@ -6,7 +6,7 @@ from chromadb.api.types import (
     Metadata,
 )
 
-from src.models.search_result import RAGSearchResult
+from src.models.rag_search_result import RAGSearchResult
 
 class VectorStore(ABC):
     '''

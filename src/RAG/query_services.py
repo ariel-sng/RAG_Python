@@ -1,5 +1,7 @@
 import json
+from pathlib import Path
 
+from src.config.settings import Settings
 from src.models.search_result import SearchResult
 from src.models.rag_search_result import RAGSearchResult
 from src.repositories.vector_store import VectorStore
@@ -65,9 +67,12 @@ class RagQueryService:
     def save_rag_result(
         self,
         result: SearchResult,
-        output_file: str = "rag_result.json",
+        output_file: str = Settings.RAG_RESULT_FILE,
     ):
         print("Guardando resultado del RAG en formato JSON...")
+
+        Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+
         data = {
             "question": result.question,
             "system_answer": result.answer,
